@@ -20,3 +20,12 @@ models/*
 !audiobooks/gui/gradio/.gitkeep
 !audiobooks/gui/host/.gitkeep
 .installed
+# local deployment artifacts (not for the public branch)
+.venv/
+.device_info.json
+.after-scoop
+requirements.orig.txt
+requirements.filtered.txt
+voices/__sessions/
+voices/__piper/
+voices/zho/**/*.wav
