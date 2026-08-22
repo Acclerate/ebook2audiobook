@@ -6,8 +6,8 @@ def build_interface(args:dict)->gr.Blocks:
         script_mode = args['script_mode']
         is_gui_process = args['is_gui_process']
         is_gui_shared = args['share']
-        title = 'Ebook2Audiobook'
-        gr_glassmask_msg = 'Initialization, please wait…'
+        title = '电子书转有声书'
+        gr_glassmask_msg = '初始化中，请稍候…'
         models = None
         language_options = [
             (
@@ -31,12 +31,13 @@ def build_interface(args:dict)->gr.Blocks:
         visible_gr_tab_abs_params = interface_component_options['gr_tab_abs_params']
         js_hide_elements = 'document.querySelector("#ebook_textarea_toolbar")?.remove();'
         js_show_elements = 'window.gr_ebook_textarea_counter();'
-        theme = gr.themes.Origin(
-            primary_hue='green',
-            secondary_hue='amber',
-            neutral_hue='gray',
+        theme = gr.themes.Soft(
+            primary_hue='amber',
+            secondary_hue='stone',
+            neutral_hue='stone',
             radius_size='lg',
-            font_mono=['JetBrains Mono', 'monospace', 'Consolas', 'Menlo', 'Liberation Mono']
+            font=['Microsoft YaHei UI', 'PingFang SC', 'Noto Sans SC', 'HarmonyOS Sans SC', 'system-ui', 'sans-serif'],
+            font_mono=['JetBrains Mono', 'Consolas', 'monospace', 'Menlo', 'Liberation Mono']
         )
         header_css = '''
             <style>
@@ -687,70 +688,135 @@ def build_interface(args:dict)->gr.Blocks:
                     0% { transform: rotate(0deg); }
                     100% { transform: rotate(360deg); }
                 }
+                /* ===== zh-CN beautify overrides ===== */
+                body, .gradio-container, button, input, textarea, select {
+                    font-family: 'Microsoft YaHei UI', 'PingFang SC', 'Noto Sans SC', 'HarmonyOS Sans SC', system-ui, sans-serif !important;
+                }
+                /* card polish */
+                .gr-group {
+                    border-radius: 14px !important;
+                    border: 1px solid rgba(120, 100, 60, 0.14) !important;
+                    background: linear-gradient(180deg, rgba(255, 253, 248, 0.9), rgba(255, 250, 240, 0.65)) !important;
+                    box-shadow: 0 1px 2px rgba(80, 60, 20, 0.05), 0 6px 18px -8px rgba(80, 60, 20, 0.12) !important;
+                    transition: box-shadow 0.25s ease;
+                }
+                .gr-group:hover {
+                    box-shadow: 0 2px 4px rgba(80, 60, 20, 0.07), 0 10px 26px -8px rgba(80, 60, 20, 0.18) !important;
+                }
+                /* section titles: gold accent bar */
+                #gr_import_markdown, #gr_language_markdown, #gr_voice_markdown,
+                #gr_device_markdown, #gr_tts_rating, #gr_models_markdown, #gr_output_markdown,
+                #gr_session_markdown, #gr_progress_markdown, #gr_audiobook_markdown {
+                    border-left: 3px solid #c09340 !important;
+                    padding-left: 10px !important;
+                    font-weight: 600 !important;
+                    letter-spacing: 0.5px;
+                    color: #4a3f2a !important;
+                }
+                /* tabs */
+                .gr-tabs button {
+                    transition: color 0.2s ease, border-color 0.2s ease !important;
+                }
+                /* convert button */
+                .gr-convert-btn {
+                    font-size: 1.15rem !important;
+                    font-weight: 700 !important;
+                    letter-spacing: 6px;
+                    border-radius: 12px !important;
+                    box-shadow: 0 4px 14px -4px rgba(192, 147, 64, 0.55) !important;
+                    transition: transform 0.15s ease, box-shadow 0.2s ease !important;
+                }
+                .gr-convert-btn:hover:not(:disabled) {
+                    transform: translateY(-1px);
+                    box-shadow: 0 8px 20px -6px rgba(192, 147, 64, 0.65) !important;
+                }
+                .gr-convert-btn:active:not(:disabled) {
+                    transform: scale(0.98);
+                }
+                /* small icon buttons tactile feedback */
+                .small-btn, .small-btn-red, .small-btn-lock, .gr-abs-search-btn {
+                    transition: transform 0.15s ease !important;
+                }
+                .small-btn:hover, .small-btn-red:hover, .small-btn-lock:hover, .gr-abs-search-btn:hover {
+                    transform: translateY(-1px);
+                }
+                /* focus visibility */
+                button:focus-visible, input:focus-visible, textarea:focus-visible {
+                    outline: 2px solid #c09340 !important;
+                    outline-offset: 2px !important;
+                }
+                @media (prefers-reduced-motion: reduce) {
+                    .gr-group, .gr-convert-btn, .small-btn, .small-btn-red, .small-btn-lock, .gr-abs-search-btn {
+                        transition: none !important;
+                    }
+                    .gr-convert-btn:hover:not(:disabled), .small-btn:hover, .small-btn-red:hover, .small-btn-lock:hover, .gr-abs-search-btn:hover {
+                        transform: none !important;
+                    }
+                }
             </style>
         '''
         
         with gr.Blocks(theme=theme, title=title, css=header_css, delete_cache=(604800, 86400)) as app:
             with gr.Group(visible=True, elem_id='gr_group_main', elem_classes='gr-group-main') as gr_group_main:
                 with gr.Tabs(elem_id='gr_tabs') as gr_tabs:
-                    with gr.Tab('Dashboard', elem_id='gr_tab_main', elem_classes='gr-tab') as gr_tab_main:
+                    with gr.Tab('控制台', elem_id='gr_tab_main', elem_classes='gr-tab') as gr_tab_main:
                         with gr.Row(elem_id='gr_row_tab_main'):
                             with gr.Column(elem_id='gr_col_1', elem_classes=['gr-col'], scale=3):
                                 with gr.Group(elem_id='gr_group_ebook_src', elem_classes=['gr-group']):
-                                    gr_import_markdown = gr.Markdown(elem_id='gr_import_markdown', elem_classes=['gr-markdown'], value='Import')
+                                    gr_import_markdown = gr.Markdown(elem_id='gr_import_markdown', elem_classes=['gr-markdown'], value='导入')
                                     gr_ebook_src = gr.File(show_label=False, label='-', elem_id='gr_ebook_src', visible=True, file_types=ebook_formats, file_count=ebook_modes['SINGLE'], allow_reordering=True, height=100)
                                     gr_voice_highlight_css = gr.HTML(value='', elem_classes=['gr-voice-highlight-css'])
-                                    gr_ebook_textarea = gr.Textbox(show_label=True, label='Text Prompt', elem_id='gr_ebook_textarea', visible=False, lines=8, max_length=max_ebook_textarea_length)
+                                    gr_ebook_textarea = gr.Textbox(show_label=True, label='文本内容', elem_id='gr_ebook_textarea', visible=False, lines=8, max_length=max_ebook_textarea_length)
                                     with gr.Row(elem_id='gr_row_ebook_mode') as gr_row_ebook_mode:
-                                        gr_ebook_mode = gr.Dropdown(label='', elem_id='gr_ebook_mode', choices=[('File',ebook_modes['SINGLE']), ('Directory',ebook_modes['DIRECTORY']), ('Text',ebook_modes['TEXT'])], interactive=True, scale=2)
-                                        gr_blocks_preview = gr.Checkbox(label='Chapters Preview', elem_id='gr_blocks_preview', value=False, interactive=True, scale=1)
+                                        gr_ebook_mode = gr.Dropdown(label='', elem_id='gr_ebook_mode', choices=[('文件',ebook_modes['SINGLE']), ('目录',ebook_modes['DIRECTORY']), ('文本',ebook_modes['TEXT'])], interactive=True, scale=2)
+                                        gr_blocks_preview = gr.Checkbox(label='章节预览', elem_id='gr_blocks_preview', value=False, interactive=True, scale=1)
                                 with gr.Group(elem_id='gr_group_language', elem_classes=['gr-group']):
-                                    gr_language_markdown = gr.Markdown(elem_id='gr_language_markdown', elem_classes=['gr-markdown'], value='Language')
+                                    gr_language_markdown = gr.Markdown(elem_id='gr_language_markdown', elem_classes=['gr-markdown'], value='语言')
                                     with gr.Row(elem_id='gr_row_language') as gr_row_language:
                                         gr_language = gr.Dropdown(show_label=False, elem_id='gr_language', choices=language_options, value=default_language_code, type='value', interactive=True, scale=2)
-                                        gr_translate_enabled = gr.Checkbox(label='Translate', elem_id='gr_translate_enabled', value=False, interactive=True, scale=1, min_width=120)
+                                        gr_translate_enabled = gr.Checkbox(label='翻译', elem_id='gr_translate_enabled', value=False, interactive=True, scale=1, min_width=120)
                                         gr_translate = gr.Dropdown(show_label=False, elem_id='gr_translate', choices=[], value=None, type='value', interactive=True, visible=False, scale=2)
                                 gr_group_voice_file = gr.Group(elem_id='gr_group_voice_file', elem_classes=['gr-group'], visible=visible_gr_group_voice_file)
                                 with gr_group_voice_file:
-                                    gr_voice_markdown = gr.Markdown(elem_id='gr_voice_markdown', elem_classes=['gr-markdown'], value='Voices')
-                                    gr_voice_file = gr.File(show_label=False, label='Upload Voice', elem_id='gr_voice_file', file_types=voice_formats, value=None, height=100)
+                                    gr_voice_markdown = gr.Markdown(elem_id='gr_voice_markdown', elem_classes=['gr-markdown'], value='音色')
+                                    gr_voice_file = gr.File(show_label=False, label='上传音色文件', elem_id='gr_voice_file', file_types=voice_formats, value=None, height=100)
                                     with gr.Row(elem_id='gr_row_voice_player') as gr_row_voice_player:
                                         gr_voice_player_hidden = gr.Audio(elem_id='gr_voice_player_hidden', type='filepath', interactive=False, waveform_options=gr.WaveformOptions(show_recording_waveform=False), show_download_button=False, container=False, visible='hidden', show_share_button=True, show_label=False, scale=0, min_width=60)
                                         gr_voice_play = gr.Button('▶', elem_id='gr_voice_play', elem_classes=['small-btn'], variant='secondary', interactive=True, visible=False, scale=0, min_width=60)
-                                        gr_voice_list = gr.Dropdown(label='Voices', elem_id='gr_voice_list', choices=voice_options, type='value', interactive=True, scale=2)
+                                        gr_voice_list = gr.Dropdown(label='音色', elem_id='gr_voice_list', choices=voice_options, type='value', interactive=True, scale=2)
                                         gr_voice_selected_filename = gr.Markdown(value='', elem_id='gr_voice_selected_filename', elem_classes=['gr-markdown'], visible=False)
                                         gr_voice_del_btn = gr.Button('🗑', elem_id='gr_voice_del_btn', elem_classes=['small-btn-red'], variant='secondary', interactive=True, visible=False, scale=0, min_width=60)
                                 with gr.Group(elem_id='gr_group_device', elem_classes=['gr-group']):
-                                    gr_device_markdown = gr.Markdown(elem_id='gr_device_markdown', elem_classes=['gr-markdown'], value='Processor')
+                                    gr_device_markdown = gr.Markdown(elem_id='gr_device_markdown', elem_classes=['gr-markdown'], value='处理器')
                                     gr_device = gr.Dropdown(label='', elem_id='gr_device', choices=[(k, v['proc']) for k, v in devices.items()], type='value', value=default_device, interactive=True)
                             with gr.Column(elem_id='gr_col_2', elem_classes=['gr-col'], scale=3):
                                 with gr.Group(elem_id='gr_group_tts_engine', elem_classes=['gr-group']):
-                                    gr_tts_rating = gr.Markdown(elem_id='gr_tts_rating', elem_classes=['gr-markdown'], value='TTS Engine')
+                                    gr_tts_rating = gr.Markdown(elem_id='gr_tts_rating', elem_classes=['gr-markdown'], value='语音引擎')
                                     gr_tts_engine_list = gr.Dropdown(label='', elem_id='gr_tts_engine_list', choices=tts_engine_options, type='value', interactive=True)
                                 with gr.Group(elem_id='gr_group_models', elem_classes=['gr-group']):
-                                    gr_models_markdown = gr.Markdown(elem_id='gr_models_markdown', elem_classes=['gr-markdown'], value='Models')
-                                    gr_fine_tuned_list = gr.Dropdown(label='Fine Tuned Preset Models', elem_id='gr_fine_tuned_list', choices=fine_tuned_options, type='value', interactive=True)
+                                    gr_models_markdown = gr.Markdown(elem_id='gr_models_markdown', elem_classes=['gr-markdown'], value='模型')
+                                    gr_fine_tuned_list = gr.Dropdown(label='微调预设模型', elem_id='gr_fine_tuned_list', choices=fine_tuned_options, type='value', interactive=True)
                                     gr_group_custom_model = gr.Group(visible=False)
                                     with gr_group_custom_model:
-                                        gr_custom_model_file = gr.File(show_label=True, label=f"Upload a ZIP File", elem_id='gr_custom_model_file', value=None, file_types=['.zip'], height=100)
+                                        gr_custom_model_file = gr.File(show_label=True, label=f"上传 ZIP 模型包", elem_id='gr_custom_model_file', value=None, file_types=['.zip'], height=100)
                                         gr_row_custom_model_list = gr.Row(elem_id='gr_row_custom_model_list')
                                         with gr_row_custom_model_list:
                                             gr_custom_model_list = gr.Dropdown(label='', elem_id='gr_custom_model_list', choices=custom_model_options, type='value', interactive=True, scale=2)
-                                            gr_custom_model_train_link = gr.Markdown(value='<a href="https://huggingface.co/spaces/drewThomasson/xtts-finetune-webui-gpu" target="_blank" rel="noopener noreferrer">New Fine Tuned Model</a>', elem_id='gr_custom_model_train_link', elem_classes=['gr-markdown'], visible=True)
+                                            gr_custom_model_train_link = gr.Markdown(value='<a href="https://huggingface.co/spaces/drewThomasson/xtts-finetune-webui-gpu" target="_blank" rel="noopener noreferrer">新建微调模型</a>', elem_id='gr_custom_model_train_link', elem_classes=['gr-markdown'], visible=True)
                                             gr_custom_model_del_btn = gr.Button('🗑', elem_id='gr_custom_model_del_btn', elem_classes=['small-btn-red'], variant='secondary', interactive=True, visible=False, scale=0, min_width=60)
                                 with gr.Group(elem_id='gr_group_output_format'):
-                                    gr_output_markdown = gr.Markdown(elem_id='gr_output_markdown', elem_classes=['gr-markdown'], value='Output')
+                                    gr_output_markdown = gr.Markdown(elem_id='gr_output_markdown', elem_classes=['gr-markdown'], value='输出')
                                     with gr.Row(elem_id='gr_row_output_format'):
-                                        gr_output_format_list = gr.Dropdown(label='Format', elem_id='gr_output_format_list', choices=output_formats, type='value', value=default_output_format, interactive=True, scale=1)
-                                        gr_output_channel_list = gr.Dropdown(label='Channel', elem_id='gr_output_channel_list', choices=['mono', 'stereo'], type='value', value=default_output_channel, interactive=True, scale=1)
+                                        gr_output_format_list = gr.Dropdown(label='格式', elem_id='gr_output_format_list', choices=output_formats, type='value', value=default_output_format, interactive=True, scale=1)
+                                        gr_output_channel_list = gr.Dropdown(label='声道', elem_id='gr_output_channel_list', choices=['mono', 'stereo'], type='value', value=default_output_channel, interactive=True, scale=1)
                                         with gr.Group(elem_id='gr_group_output_split'):
-                                            gr_output_split = gr.Checkbox(label='Split File', elem_id='gr_output_split', value=default_output_split, interactive=True)
+                                            gr_output_split = gr.Checkbox(label='自动分卷', elem_id='gr_output_split', value=default_output_split, interactive=True)
                                             gr_row_output_split_hours = gr.Row(elem_id='gr_row_output_split_hours', visible=False)
                                             with gr_row_output_split_hours:
-                                                gr_output_split_hours_markdown = gr.Markdown(elem_id='gr_output_split_hours_markdown',elem_classes=['gr-markdown-output-split-hours'], value='Hours<br/>/ Part')
+                                                gr_output_split_hours_markdown = gr.Markdown(elem_id='gr_output_split_hours_markdown',elem_classes=['gr-markdown-output-split-hours'], value='小时<br/>/分卷')
                                                 gr_output_split_hours = gr.Dropdown(label='', elem_id='gr_output_split_hours', choices=options_output_split_hours, type='value', value=default_output_split_hours, interactive=True, scale=1)
                                 with gr.Group(elem_id='gr_group_session', elem_classes=['gr-group']):
-                                    gr_session_markdown = gr.Markdown(elem_id='gr_session_markdown', elem_classes=['gr-markdown'], value='Session')
+                                    gr_session_markdown = gr.Markdown(elem_id='gr_session_markdown', elem_classes=['gr-markdown'], value='会话')
                                     gr_session_switch_disable_state = gr.State(None)
                                     gr_session_switch_enable_state = gr.State(None)
                                     with gr.Row(elem_id='gr_row_session'):
@@ -758,12 +824,12 @@ def build_interface(args:dict)->gr.Blocks:
                                         gr_session_switch_btn = gr.Button('🔒︎', elem_id='gr_session_switch_btn', elem_classes=['small-btn-lock'], variant='secondary', visible=True, interactive=True, scale=0, min_width=60)
 
                         with gr.Group(elem_id='gr_group_progress', elem_classes=['gr-group-no-col']):
-                            gr_progress_markdown = gr.Markdown(elem_id='gr_progress_markdown', elem_classes=['gr-markdown'], value='Status')
+                            gr_progress_markdown = gr.Markdown(elem_id='gr_progress_markdown', elem_classes=['gr-markdown'], value='状态')
                             gr_progress = gr.Textbox(elem_id='gr_progress', label='', interactive=False, visible=True)
                             gr_progress_bar = gr.Progress(track_tqdm=True)
 
                         with gr.Group(elem_id='gr_group_audiobook_list', elem_classes=['gr-group-no-col'], visible=True) as gr_group_audiobook_list:
-                            gr_audiobook_markdown = gr.Markdown(elem_id='gr_audiobook_markdown', elem_classes=['gr-markdown'], value='Audiobook')
+                            gr_audiobook_markdown = gr.Markdown(elem_id='gr_audiobook_markdown', elem_classes=['gr-markdown'], value='有声书')
                             gr_audiobook_vtt = gr.Textbox(elem_id='gr_audiobook_vtt', label='', interactive=False, visible='hidden')
                             gr_playback_time = gr.Number(elem_id="gr_playback_time", label='', interactive=False, visible='hidden', value=0.0)
                             gr_audiobook_sentence = gr.Textbox(elem_id='gr_audiobook_sentence', label='', value='…', interactive=False, lines=3, max_lines=3)
@@ -776,119 +842,119 @@ def build_interface(args:dict)->gr.Blocks:
                             gr_audiobook_files_state = gr.State(False)
 
                         with gr.Group(elem_id='gr_group_convert_btn', elem_classes=['gr-group-convert-btn']) as gr_group_convert_btn:
-                            gr_convert_btn = gr.Button(elem_id='gr_convert_btn', value='📚', elem_classes='gr-convert-btn', variant='primary', interactive=False)
+                            gr_convert_btn = gr.Button(elem_id='gr_convert_btn', value='开始转换', elem_classes='gr-convert-btn', variant='primary', interactive=False)
 
-                    with gr.Tab('XTTS Settings', elem_id='gr_tab_xtts_params', elem_classes='gr-tab', visible=False) as gr_tab_xtts_params:
+                    with gr.Tab('XTTS 参数', elem_id='gr_tab_xtts_params', elem_classes='gr-tab', visible=False) as gr_tab_xtts_params:
                         with gr.Group(elem_id='gr_group_xtts_params', elem_classes=['gr-group']):
                             gr_xtts_temperature = gr.Slider(
-                                label='Temperature',
+                                label='温度',
                                 minimum=0.05,
                                 maximum=5.0,
                                 step=0.05,
                                 value=float(default_engine_settings[TTS_ENGINES['XTTS']]['temperature']),
                                 elem_id='gr_xtts_temperature',
-                                info='Higher values lead to more creative, unpredictable outputs. Lower values make it more monotone.'
+                                info='数值越高，语气越有创意、越难预测；数值越低，语气越平稳。'
                             )
                             gr_xtts_length_penalty = gr.Slider(
-                                label='Length Penalty',
+                                label='长度惩罚',
                                 minimum=0.3,
                                 maximum=5.0,
                                 step=0.1,
                                 value=float(default_engine_settings[TTS_ENGINES['XTTS']]['length_penalty']),
                                 elem_id='gr_xtts_length_penalty',
-                                info='Adjusts how much longer sequences are preferred. Higher values encourage the model to produce longer and more natural speech.',
+                                info='调节对较长语音序列的偏好，数值越高，模型越倾向生成更长、更自然的语音。',
                                 visible=False
                             )
                             gr_xtts_num_beams = gr.Slider(
-                                label='Number Beams',
+                                label='束搜索宽度',
                                 minimum=1,
                                 maximum=10,
                                 step=1,
                                 value=int(default_engine_settings[TTS_ENGINES['XTTS']]['num_beams']),
                                 elem_id='gr_xtts_num_beams',
-                                info='Controls how many alternative sequences the model explores. Higher values improve speech coherence and pronunciation but increase inference time.',
+                                info='控制模型同时探索的候选序列数量，数值越高，连贯性和发音越好，但推理耗时越长。',
                                 visible=False
                             )
                             gr_xtts_repetition_penalty = gr.Slider(
-                                label='Repetition Penalty',
+                                label='重复惩罚',
                                 minimum=1.0,
                                 maximum=5.0,
                                 step=0.1,
                                 value=float(default_engine_settings[TTS_ENGINES['XTTS']]['repetition_penalty']),
                                 elem_id='gr_xtts_repetition_penalty',
-                                info='Penalizes repeated phrases. Higher values reduce repetition.'
+                                info='对重复短语施加惩罚，数值越高越不容易复读。'
                             )
                             gr_xtts_top_k = gr.Slider(
-                                label='Top-k Sampling',
+                                label='Top-k 采样',
                                 minimum=10,
                                 maximum=100,
                                 step=1,
                                 value=int(default_engine_settings[TTS_ENGINES['XTTS']]['top_k']),
                                 elem_id='gr_xtts_top_k',
-                                info='Lower values restrict outputs to more likely words and increase speed at which audio generates.'
+                                info='数值越低，越偏向高概率词，生成速度也越快。'
                             )
                             gr_xtts_top_p = gr.Slider(
-                                label='Top-p Sampling',
+                                label='Top-p 采样',
                                 minimum=0.1,
                                 maximum=1.0, 
                                 step=0.01,
                                 value=float(default_engine_settings[TTS_ENGINES['XTTS']]['top_p']),
                                 elem_id='gr_xtts_top_p',
-                                info='Controls cumulative probability for word selection. Lower values make the output more predictable and increase speed at which audio generates.'
+                                info='控制词选择的累积概率，数值越低，输出越稳定，生成速度越快。'
                             )
                             gr_xtts_speed = gr.Slider(
-                                label='Speed', 
+                                label='语速', 
                                 minimum=0.5, 
                                 maximum=3.0, 
                                 step=0.1, 
                                 value=float(default_engine_settings[TTS_ENGINES['XTTS']]['speed']),
                                 elem_id='gr_xtts_speed',
-                                info='Adjusts how fast the narrator will speak.'
+                                info='调节朗读者的语速。'
                             )
                             gr_xtts_enable_text_splitting = gr.Checkbox(
-                                label='Enable Text Splitting', 
+                                label='启用文本切分', 
                                 value=default_engine_settings[TTS_ENGINES['XTTS']]['enable_text_splitting'],
                                 elem_id='gr_xtts_enable_text_splitting',
-                                info='Coqui-tts builtin text splitting. Can help against hallucinations bu can also be worse.',
+                                info='Coqui-tts 内置文本切分，可缓解幻听现象，但效果也可能变差。',
                                 visible=False
                             )      
-                    with gr.Tab('Bark Settings', elem_id='gr_tab_bark_params', elem_classes='gr-tab', visible=False) as gr_tab_bark_params:
+                    with gr.Tab('Bark 参数', elem_id='gr_tab_bark_params', elem_classes='gr-tab', visible=False) as gr_tab_bark_params:
                         gr.Markdown(
                             elem_id='gr_markdown_tab_bark_params',
                             value='''
-                            ### Customize BARK Parameters
-                            Adjust the settings below to influence how the audio is generated, emotional and voice behavior random or more conservative
+                            ### 自定义 BARK 参数
+                            调整下方设置，影响音频的生成方式、情感表现与音色行为的随机程度
                             '''
                         )
                         with gr.Group(elem_id='gr_group_bark_params', elem_classes=['gr-group']):
                             gr_bark_text_temp = gr.Slider(
-                                label='Text Temperature', 
+                                label='文本温度', 
                                 minimum=0.0,
                                 maximum=1.0,
                                 step=0.01,
                                 value=float(default_engine_settings[TTS_ENGINES['BARK']]['text_temp']),
                                 elem_id='gr_bark_text_temp',
-                                info='Higher values lead to more creative, unpredictable outputs. Lower values make it more conservative.'
+                                info='数值越高，输出越有创意、越难预测；数值越低，输出越保守。'
                             )
                             gr_bark_waveform_temp = gr.Slider(
-                                label='Waveform Temperature', 
+                                label='波形温度', 
                                 minimum=0.0,
                                 maximum=1.0,
                                 step=0.01,
                                 value=float(default_engine_settings[TTS_ENGINES['BARK']]['waveform_temp']),
                                 elem_id='gr_bark_waveform_temp',
-                                info='Higher values lead to more creative, unpredictable outputs. Lower values make it more conservative.'
+                                info='数值越高，输出越有创意、越难预测；数值越低，输出越保守。'
                             )
-                    with gr.Tab('Audiobookshelf', elem_id='gr_tab_abs_params', elem_classes='gr-tab', visible=visible_gr_tab_abs_params) as gr_tab_abs_params:
+                    with gr.Tab('有声书推送', elem_id='gr_tab_abs_params', elem_classes='gr-tab', visible=visible_gr_tab_abs_params) as gr_tab_abs_params:
                         with gr.Row(elem_id='gr_row1_abs'):
-                            gr_abs_url = gr.Textbox(label='Server URL', elem_id='gr_abs_url', value=default_abs_url, placeholder='http://localhost:13378', lines=1, max_lines=1, interactive=True, scale=2)
-                            gr_abs_api_token = gr.Textbox(label='API Token', elem_id='gr_abs_api_token', value=default_abs_api_token, type='password', placeholder='eyJ...', lines=1, max_lines=1, interactive=True, scale=1) 
+                            gr_abs_url = gr.Textbox(label='服务器地址', elem_id='gr_abs_url', value=default_abs_url, placeholder='http://localhost:13378', lines=1, max_lines=1, interactive=True, scale=2)
+                            gr_abs_api_token = gr.Textbox(label='API 令牌', elem_id='gr_abs_api_token', value=default_abs_api_token, type='password', placeholder='eyJ...', lines=1, max_lines=1, interactive=True, scale=1) 
                         with gr.Row(elem_id='gr_row2_abs'):
-                            gr_abs_library = gr.Dropdown(label='', elem_id='gr_abs_library', choices=[('Enter URL + API Token to load libraries', '')], value=default_abs_library or None, interactive=True)
+                            gr_abs_library = gr.Dropdown(label='', elem_id='gr_abs_library', choices=[('输入服务器地址和 API 令牌后加载书库', '')], value=default_abs_library or None, interactive=True)
                             gr_abs_search_btn = gr.Button('🔍', elem_id='gr_abs_search_btn', elem_classes=['gr-abs-search-btn'], variant='', visible=True, interactive=True, scale=0, min_width=60)
                         with gr.Group(elem_id='gr_group_abs_upload_btn', elem_classes=['gr-group-abs-upload-btn']):
-                            gr_abs_audiobook = gr.Textbox(elem_id='gr_abs_audiobook', label='Audiobook', lines=1, max_lines=1, interactive=False, visible=True)
-                            gr_abs_status = gr.Textbox(elem_id='gr_abs_status', label='Status', lines=1, max_lines=1, interactive=False, visible=True)
+                            gr_abs_audiobook = gr.Textbox(elem_id='gr_abs_audiobook', label='有声书', lines=1, max_lines=1, interactive=False, visible=True)
+                            gr_abs_status = gr.Textbox(elem_id='gr_abs_status', label='状态', lines=1, max_lines=1, interactive=False, visible=True)
                             gr_abs_upload_btn = gr.Button(elem_id='gr_abs_upload_btn', value='🡅', elem_classes=['gr-abs-upload-btn'], variant='secondary', interactive=False)
 
             gr_blocks_page = gr.Number(value=0, visible=False, precision=0)
@@ -907,7 +973,7 @@ def build_interface(args:dict)->gr.Blocks:
                     for i in range(page_size):
                         acc_class = 'accordion-block-even' if i % 2 == 0 else 'accordion-block-odd'
                         with gr.Accordion(
-                            f'Block {i}',
+                            f'段落 {i}',
                             elem_id=f'block_{i}',
                             elem_classes=[acc_class],
                             visible=False,
@@ -1303,7 +1369,7 @@ def build_interface(args:dict)->gr.Blocks:
             def _search_abs_libraries(session_id:str, url:str, api_token:str)->gr.update:
                 from lib.classes.audiobookshelf import fetch_libraries
                 if not url or not api_token:
-                    return gr.update(choices=[('Enter URL + API Token to load libraries', '')], value=None)
+                    return gr.update(choices=[('输入服务器地址和 API 令牌后加载书库', '')], value=None)
                 session = context.get_session(session_id)
                 if not session or not session.get('id', False):
                     return gr.update(interactive=False)
@@ -1315,15 +1381,15 @@ def build_interface(args:dict)->gr.Blocks:
                     session['abs_url'] = url
                     session['abs_api_token'] = api_token
                     return gr.update(choices=libs, value=selected)
-                return gr.update(choices=[('No libraries found - check URL/API token', '')])
+                return gr.update(choices=[('未找到书库，请检查地址/API 令牌', '')])
 
             def _click_gr_abs_upload_btn(session_id:str, audiobook:str, url:str, api_token:str, library_id:str)->tuple:
                 try:
                     session = context.get_session(session_id)
                     if not session or not session.get('id', False):
-                        return (gr.update(interactive=True), 'Session not found')
+                        return (gr.update(interactive=True), '未找到会话')
                     if not audiobook or not os.path.isfile(str(audiobook)):
-                        return (gr.update(interactive=True), 'No audiobook to upload')
+                        return (gr.update(interactive=True), '没有可上传的有声书')
                     from lib.classes.audiobookshelf import upload_to_abs
                     from urllib.parse import urlparse
                     title = Path(audiobook).stem
@@ -1471,7 +1537,7 @@ def build_interface(args:dict)->gr.Blocks:
                     if session and session.get('id', False):
                         session['ebook_selected'] = None
                         session['voice_map'] = {}
-                        msg = 'Click on each file in the list to set its voice individually.'
+                        msg = '点击列表中的每个文件，可单独设置其音色。'
                         show_alert(session_id, {
                             'type': 'info',
                             'msg': msg
@@ -1513,14 +1579,14 @@ def build_interface(args:dict)->gr.Blocks:
                                 voice_update = gr.update(value=session.get('voice')) if prev_selected else gr.update()
                                 if data is None and session.get('status', None) in [status_tags['EDIT'], status_tags['CONVERTING']]:
                                     session['cancellation_requested'] = True
-                                    msg = 'Cancellation requested, please wait…'
+                                    msg = '已请求取消，请稍候…'
                                     return gr.update(value=_show_gr_modal('wait', msg), visible=True), gr.update(value=''), voice_update, gr.update(visible=False), gr.update(value='', visible=False), gr.update(value='')
                                 session['cancellation_requested'] = False
                                 return gr.update(), gr.update(value=''), voice_update, gr.update(visible=False), gr.update(value='', visible=False), gr.update(value='')
                         if data is None:
                             if session.get('status', None) in [status_tags['EDIT'], status_tags['CONVERTING']]:
                                 session['cancellation_requested'] = True
-                                msg = 'Cancellation requested, please wait…'
+                                msg = '已请求取消，请稍候…'
                                 return gr.update(value=_show_gr_modal('wait', msg), visible=True), gr.update(value=''), gr.update(), gr.update(), gr.update(), gr.update(value='')
                         session['cancellation_requested'] = False
                 except Exception as e:
@@ -1552,7 +1618,7 @@ def build_interface(args:dict)->gr.Blocks:
                     style = _build_voice_highlight_css(row)
                     filename = Path(ebook_path).name
                     return (
-                        gr.update(value=assigned_voice, label='Voices'),
+                        gr.update(value=assigned_voice, label='音色'),
                         gr.update(value=style),
                         gr.update(visible=True),
                         gr.update(value=filename, visible=True),
@@ -1622,7 +1688,7 @@ def build_interface(args:dict)->gr.Blocks:
                                 status, msg = extractor.extract_voice()
                                 if status:
                                     session['voice'] = final_voice_file
-                                    msg = f'Voice {voice_name} added to the voices list'
+                                    msg = f'音色 {voice_name} 已加入音色列表'
                                     state['type'] = 'success'
                                     state['msg'] = msg
                                     show_alert(session_id, state)
@@ -1677,7 +1743,7 @@ def build_interface(args:dict)->gr.Blocks:
                                 for settings in (default_engine_settings[engine] for engine in TTS_ENGINES.values())
                             )
                             if is_builtin and is_in_builtin:
-                                error = f'Voice file {speaker} is a builtin voice and cannot be deleted.'
+                                error = f'{speaker} 是内置音色，无法删除。'
                                 show_alert(session_id, {"type": "warning", "msg": error})
                                 return gr.update(visible=False), gr.update()
                             if is_in_models:
@@ -1689,13 +1755,13 @@ def build_interface(args:dict)->gr.Blocks:
                                 parent_path = Path(session['voice_dir']).parent.resolve()
                                 if parent_path in selected_path.parents:
                                     session['status'] = status_tags['DELETION']
-                                    msg = f'Are you sure to delete {speaker}?'
+                                    msg = f'确定要删除 {speaker} 吗？'
                                     return (
                                         gr.update(value=_show_gr_modal(session['status'], msg), visible=True),
                                         gr.update(value='confirm_voice_del')
                                     )
                                 else:
-                                    error = f'{speaker} is part of the global voices directory. Only your own custom uploaded voices can be deleted!'
+                                    error = f'{speaker} 属于全局音色目录，只能删除你自己上传的音色！'
                                     show_alert(session_id, {"type": "warning", "msg": error})
                                     return gr.update(visible=False), gr.update()
                             except Exception as e:
@@ -1715,7 +1781,7 @@ def build_interface(args:dict)->gr.Blocks:
                         if session and session.get('id', False):
                             selected_name = os.path.basename(selected)
                             session['status'] = status_tags['DELETION']
-                            msg = f'Are you sure to delete {selected_name}?'
+                            msg = f'确定要删除 {selected_name} 吗？'
                             return gr.update(value=_show_gr_modal(session['status'], msg), visible=True), gr.update(value='confirm_custom_model_del')
                 except Exception as e:
                     error = f'Could not delete the custom model {selected_name}!'
@@ -1729,7 +1795,7 @@ def build_interface(args:dict)->gr.Blocks:
                         if session and session.get('id', False):
                             selected_name = Path(selected).stem
                             session['status'] = status_tags['DELETION']
-                            msg = f'Are you sure to delete {selected_name}?'
+                            msg = f'确定要删除 {selected_name} 吗？'
                             return gr.update(value=_show_gr_modal(session['status'], msg), visible=True), gr.update(value='confirm_audiobook_del')
                 except Exception as e:
                     error = f'Could not delete the audiobook {selected_name}!'
@@ -1771,13 +1837,13 @@ def build_interface(args:dict)->gr.Blocks:
                                         save_db_blocks(session_id)
                                     session['voice'] = fallback
                                     voice_options[:] = [(i, v) for i, v in voice_options if v != deleted_voice]
-                                    msg = f'Voice file {re.sub(r".wav$", "", selected_name)} deleted!'
+                                    msg = f'音色文件 {re.sub(r".wav$", "", selected_name)} 已删除！'
                                     show_alert(session_id, {'type': 'info', 'msg': msg})
                                     return gr.update(value='', visible=False), gr.update(), gr.update(), _update_gr_voice_list(session_id)
                                 elif method == 'confirm_custom_model_del':
                                     selected_name = os.path.basename(custom_model)
                                     shutil.rmtree(custom_model, ignore_errors=True)                           
-                                    msg = f'Custom model {selected_name} deleted!'
+                                    msg = f'自定义模型 {selected_name} 已删除！'
                                     if session['custom_model'] is not None and session['voice'] is not None:
                                         if session['custom_model'] in session['voice']:
                                             session['voice'] = models[session['fine_tuned']]['voice']
@@ -1802,7 +1868,7 @@ def build_interface(args:dict)->gr.Blocks:
                                         language = session['translate'] if session['translate_enabled'] and session['translate'] is not None else session['language']
                                         process_dir = os.path.join(session['session_dir'], hashlib.md5((selected_name).encode()).hexdigest())
                                         shutil.rmtree(process_dir, ignore_errors=True)
-                                    msg = f'Audiobook {selected_name} deleted!'
+                                    msg = f'有声书 {selected_name} 已删除！'
                                     session['audiobook'] = None
                                     show_alert(session_id, {"type": "info", "msg": msg})
                                     return gr.update(value='', visible=False), gr.update(), _update_gr_audiobook_list(session_id), gr.update()
@@ -1930,7 +1996,7 @@ def build_interface(args:dict)->gr.Blocks:
                     except Exception:
                         translate_iso1 = None
                 else:
-                    msg = 'No translate languages available'
+                    msg = '没有可用的翻译语言'
                     translate = None
                     translate_iso1 = None
                     translate_options.append((msg, None))
@@ -2206,7 +2272,7 @@ def build_interface(args:dict)->gr.Blocks:
                             return gr.update(), gr.update(interactive=True), back_id, gr.update(value='🔑︎'), back_id, None
                         elif session['status'] == status_tags['SWITCH']:
                             if new_id is None or not new_id.strip():
-                                msg = 'Session ID cannot be empty'
+                                msg = '会话 ID 不能为空'
                                 show_alert(back_id, {"type": "warning", "msg": msg})
                                 return gr.update(), gr.update(), backup_session_id, gr.update(), None, None
                             new_session_id = new_id.strip()
@@ -2222,7 +2288,7 @@ def build_interface(args:dict)->gr.Blocks:
                                 return gr.update(value=json.dumps(new_session, cls=JSONDictProxyEncoder)), gr.update(interactive=False), None, gr.update(value='🔒︎'), None, new_session_id
                             else:
                                 session['status'] = status_tags['SWITCH']
-                                msg = 'Session not found!'
+                                msg = '未找到会话！'
                                 show_alert(back_id, {"type": "warning", "msg": msg})
                 except Exception as e:
                     error = f'_click_gr_session_switch_btn(): {e}'
@@ -2239,7 +2305,7 @@ def build_interface(args:dict)->gr.Blocks:
             def _toggle_audiobook_files(session_id:str, audiobook:str, is_visible:bool, refresh_only:bool=False)->tuple:
                 try:
                     if not audiobook:
-                        error = 'No audiobook selected.'
+                        error = '未选择有声书。'
                         show_alert(session_id, {"type": "error", "msg": error})
                         return gr.update(), False
                     if is_visible and not refresh_only:
@@ -2805,14 +2871,14 @@ def build_interface(args:dict)->gr.Blocks:
                     os.makedirs(session['custom_model_dir'], exist_ok=True)
                     os.makedirs(session['voice_dir'], exist_ok=True)     
                     if is_gui_shared:
-                        msg = f' Note: access limit time: {interface_shared_tmp_expire} days. '
+                        msg = f' 注意：访问有效期 {interface_shared_tmp_expire} 天。 '
                         session['audiobooks_dir'] = os.path.join(audiobooks_gradio_dir, f"web-{session['id']}")
                         delete_unused_tmp_dirs(session['id'], audiobooks_gradio_dir, interface_shared_tmp_expire)
                     else:
-                        msg = f' Note: if no activity is detected after {tmp_expire} days, your session will be cleaned up. '
+                        msg = f' 注意：若 {tmp_expire} 天内无任何操作，该会话数据将被清理。 '
                         session['audiobooks_dir'] = os.path.join(audiobooks_host_dir, f"web-{session['id']}")
                         delete_unused_tmp_dirs(session['id'], audiobooks_host_dir, tmp_expire)
-                    msg += 'Your browser needs cookies enabled to resume the conversions.'
+                    msg += '浏览器需启用 Cookie 才能续传未完成的转换。'
                     if not os.path.exists(session['audiobooks_dir']):
                         os.makedirs(session['audiobooks_dir'], exist_ok=True)
                     previous_hash = state['hash']
