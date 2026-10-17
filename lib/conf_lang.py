@@ -28,7 +28,8 @@ ebook2audiobook.cmd --help
 python app.py --help
 '''
 session_info = 'In headless mode, store it in case of interruption, crash,\nor reuse of a custom model or custom voice.\nYou can resume the conversion with the --session option.\n************************************************************************'
-default_language_code = 'eng' # ISO-639-3
+default_language_code = 'zho' # ISO-639-3
+supported_language_codes = ['zho', 'eng'] # 中文优先，英文次之，仅此两种
 year_to_decades_languages = ['eng', 'deu', 'nld', 'nob', 'dan', 'swe']
 
 punctuation_switch = {

@@ -1,5 +1,5 @@
 import os, re
-from lib.conf import tts_dir, voices_dir
+from lib.conf import tts_dir, voices_dir, root_dir
 
 loaded_tts = {}
 xtts_builtin_speakers_list = {}
@@ -13,7 +13,8 @@ TTS_ENGINES = {
     "FAIRSEQ": "fairseq",
     "GLOWTTS": "glowtts",
     "TACOTRON": "tacotron",
-    "YOURTTS": "yourtts"
+    "YOURTTS": "yourtts",
+    "COSYVOICE": "cosyvoice"
 }
 
 TTS_VOICE_CONVERSION = {
@@ -59,7 +60,7 @@ IPA_REMAINING_PATTERN = re.compile(
     r']+'
 )
 
-default_tts_engine = TTS_ENGINES['XTTS']
+default_tts_engine = TTS_ENGINES['COSYVOICE']
 default_fine_tuned = 'internal'
 default_vc_model = TTS_VOICE_CONVERSION['knnvc']['path']
 default_voice_detection_model = 'drewThomasson/segmentation'
@@ -113,6 +114,15 @@ default_engine_settings = {
             "FerranSimen": "Ferran Simen", "XavierHayasaka": "Xavier Hayasaka", "LuisMoray": "Luis Moray",
             "MarcosRudaski": "Marcos Rudaski"
         },
+        "rating": {"VRAM": 4, "CPU": 2, "RAM": 4, "Realism": 5}
+    },
+    TTS_ENGINES['COSYVOICE']: {
+        "languages": {"zho": "zh", "eng": "en"},
+        "samplerate": 24000,
+        "files": ['cosyvoice2.yaml', 'llm.pt', 'flow.pt', 'hift.pt', 'campplus.onnx', 'speech_tokenizer_v2.onnx', 'spk2info.pt'],
+        # default voice = prompt wav shipped with the vendored CosyVoice repo (root_dir is the lib folder)
+        "voice": os.path.join(os.path.dirname(root_dir), 'ext', 'py', 'CosyVoice', 'asset', 'zero_shot_prompt.wav'),
+        "voices": {},
         "rating": {"VRAM": 4, "CPU": 2, "RAM": 4, "Realism": 5}
     },
     TTS_ENGINES['BARK']: {

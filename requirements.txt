@@ -44,3 +44,19 @@ pandas>=1.0,<3.0
 gradio==5.49.1
 coqui-tts[languages]==0.27.5
 piper-tts==1.4.2
+# CosyVoice2 engine (code vendored at ext/py/CosyVoice, added to sys.path by lib/classes/tts_engines/cosyvoice.py)
+conformer==0.3.2
+HyperPyYAML==1.2.3
+omegaconf
+hydra-core
+diffusers
+modelscope
+openai-whisper
+wetext
+x-transformers
+pyworld
+gdown
+wget
+rootutils
+rich
+pyarrow

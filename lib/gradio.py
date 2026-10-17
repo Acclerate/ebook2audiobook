@@ -14,7 +14,8 @@ def build_interface(args:dict)->gr.Blocks:
                 f"{details['name']} - {details['native_name']}" if details['name'] != details['native_name'] else details['name'],
                 lang
             )
-            for lang, details in language_mapping.items()
+            for lang in supported_language_codes
+            if (details := language_mapping.get(lang)) is not None
         ]
         translate_options = []
         voice_options = []
@@ -1235,7 +1236,10 @@ def build_interface(args:dict)->gr.Blocks:
                 try:
                     if not lang:
                         return []
-                    return ArgosTranslator().get_target_options(lang)
+                    return [
+                        item for item in ArgosTranslator().get_target_options(lang)
+                        if item[1] in supported_language_codes
+                    ]
                 except Exception as e:
                     error = f'_build_translate_targets() error: {e}'
                     print(error)
@@ -2850,6 +2854,10 @@ def build_interface(args:dict)->gr.Blocks:
                             session['translate_enabled'] = False
                             session['translate'] = None
                             session['translate_iso1'] = None
+                    if session.get('language') not in supported_language_codes:
+                        # 旧会话可能残留已下线的语言代码，统一归位到默认语言
+                        session['language'] = default_language_code
+                        session['language_iso1'] = None
                     effective_lang = session.get('language')
                     if session.get('translate_enabled') and session.get('translate'):
                         effective_lang = session['translate']

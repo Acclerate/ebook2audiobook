@@ -3,7 +3,7 @@ import argparse, json, socket, shutil, multiprocessing, sys, uuid, copy, warning
 from pathlib import Path
 
 from lib.conf import *
-from lib.conf_lang import default_language_code, language_mapping, install_info
+from lib.conf_lang import default_language_code, supported_language_codes, language_mapping, install_info
 from lib.conf_models import TTS_ENGINES, default_fine_tuned, default_engine_settings
 
 warnings.filterwarnings('ignore', category=SyntaxWarning)
@@ -183,9 +183,9 @@ SML tags available:
     headless_group.add_argument(cli_options[5], type=str, help='Path to the ebook file for conversion. Cannot be used when --ebooks_dir or --text is present.')
     headless_group.add_argument(cli_options[6], type=str, help='Relative or absolute path of the directory containing the files to convert. Cannot be used when --ebook or --text is present.')
     headless_group.add_argument(cli_options[7], type=str, help='Raw text for conversion. Cannot be used when --ebook or --ebooks_dir is present.')
-    headless_group.add_argument(cli_options[8], type=str, default=default_language_code, help='Language of the e-book. Default language is set in ./lib/lang.py sed as default if not present. All compatible language codes are in ./lib/lang.py')
+    headless_group.add_argument(cli_options[8], type=str, default=default_language_code, choices=supported_language_codes, help='Language of the e-book. Only zho (中文, default) and eng are supported.')
     headless_optional_group = parser.add_argument_group('optional parameters')
-    headless_optional_group.add_argument(cli_options[9], type=str, default=None, metavar='ISO3', help='''Translate ebook to a target language (ISO 639-3 code, e.g. eng, fra, deu) before TTS synthesis. 
+    headless_optional_group.add_argument(cli_options[9], type=str, default=None, metavar='ISO3', choices=supported_language_codes, help='''Translate ebook to a target language (zho or eng) before TTS synthesis.
 Uses argostranslate. The target language becomes the effective TTS language for the run.
 A copy of the source ebook is made with the _<iso3> suffix so translated and non-translated
 outputs stay isolated (independent process folder, audio chunks, and final file).''')
